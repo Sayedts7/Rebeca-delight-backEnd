@@ -229,59 +229,54 @@ class _Extra_ChezainState extends State<Extra_Chezain> {
                     Padding(
                       padding: const EdgeInsets.all(15.0),
                       child: InkWell(
-                        onTap: (){
+                        onTap: ()async{
+                          setState(() {
+                            loading = true;
+                          });
+                          var id = DateTime.now().millisecondsSinceEpoch.toString();
+                          firebase_storage.Reference ref = firebase_storage.FirebaseStorage.instance.ref('/stuff/'+id);
+                          firebase_storage.UploadTask uplaodTask = ref.putFile(_image!.absolute);
+
+                          await Future.value(uplaodTask).then((value) async{
+                            var newUrl = await ref.getDownloadURL();
+
+
+                            firestore.doc(id).set({
+                              'id' : id,
+                              'name': namecontroller.text.toString(),
+                              'description': descriptioncontroller.text.toString(),
+                              'price': pricecontroller.text.toString(),
+                              'delivery_time': timecontroller.text.toString(),
+                              'image' : newUrl.toString(),
+                              'category' : Categorycontroller.text.toString(),
+
+                            }).then((value) {
+                              setState(() {
+                                loading = false;
+                              });
+                              Utils().toastMessage('Uploaded');
+
+                            }).onError((error, stackTrace) {
+                              setState(() {
+                                loading = false;
+                              });
+                              Utils().toastMessage(error.toString());
+
+                            });
+                          });
+
+
 
                         },
-                        child: InkWell(
-                          onTap: ()async{
-                            setState(() {
-                              loading = true;
-                            });
-                            var id = DateTime.now().millisecondsSinceEpoch.toString();
-                            firebase_storage.Reference ref = firebase_storage.FirebaseStorage.instance.ref('/stuff/'+id);
-                            firebase_storage.UploadTask uplaodTask = ref.putFile(_image!.absolute);
-
-                            await Future.value(uplaodTask).then((value) async{
-                              var newUrl = await ref.getDownloadURL();
-
-
-                              firestore.doc(id).set({
-                                'id' : id,
-                                'name': namecontroller.text.toString(),
-                                'description': descriptioncontroller.text.toString(),
-                                'price': pricecontroller.text.toString(),
-                                'delivery_time': timecontroller.text.toString(),
-                                'image' : newUrl.toString(),
-                                'category' : Categorycontroller.text.toString(),
-
-                              }).then((value) {
-                                setState(() {
-                                  loading = false;
-                                });
-                                Utils().toastMessage('Uploaded');
-
-                              }).onError((error, stackTrace) {
-                                setState(() {
-                                  loading = false;
-                                });
-                                Utils().toastMessage(error.toString());
-
-                              });
-                            });
-
-
-
-                          },
-                          child: Container(
-                            width: MediaQuery.of(context).size.width,
-                            height: 50,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20),
-                                gradient: LinearGradient(colors: [appColor1, appColor2])
-                            ),
-                            child: Center(
-                                child:loading? CircularProgressIndicator(strokeWidth: 3, color: Colors.white,):Text( 'Enter', style: TextStyle(fontSize: 25, color: Colors.white),)),
+                        child: Container(
+                          width: MediaQuery.of(context).size.width,
+                          height: 50,
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              gradient: LinearGradient(colors: [appColor1, appColor2])
                           ),
+                          child: Center(
+                              child:loading? CircularProgressIndicator(strokeWidth: 3, color: Colors.white,):Text( 'Enter', style: TextStyle(fontSize: 25, color: Colors.white),)),
                         ),
                       ),
                     ),
